@@ -1,0 +1,61 @@
+]{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home | MinMedia{% endblock %}
+
+{% block content %}
+
+{% for post in posts %}
+<div class="feed-container">
+
+    <div class="post-card">
+
+        <!-- POST HEADER -->
+        <div class="post-header">
+            <img src="{% static 'images/user-avatar.png' %}" class="avatar">
+            <div>
+                <strong>{{ post.user.username }}</strong>
+                <div class="post-time">2 hours ago</div>
+            </div>
+        </div>
+
+        <!-- CAPTION -->
+        <p class="post-caption">
+            {{ post.caption }}
+        </p>
+
+        <!-- IMAGE SLIDER -->
+        {% if post.images.all %}
+        <div id="carouselPost{{ post.id }}" class="carousel slide" data-ride="carousel">
+
+            <div class="carousel-inner">
+                {% for image in post.images.all %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img class="d-block w-100 post-image" src="{{ image.image.url }}">
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if post.images.count > 1 %}
+            <a class="carousel-control-prev" href="#carouselPost{{ post.id }}" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </a>
+
+            <a class="carousel-control-next" href="#carouselPost{{ post.id }}" role="button" data-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- ACTIONS -->
+        <div class="post-actions">
+            <button class="like-btn">❤️ Like</button>
+            <button class="comment-btn">💬 Comment</button>
+        </div>
+
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

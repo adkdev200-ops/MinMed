@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Post | MinMedia{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <h2>Create a New Post</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Caption -->
+        <div class="form-group">
+            <label for="caption">Caption</label>
+            <textarea id="caption" name="caption" rows="4" placeholder="Write something..." required></textarea>
+        </div>
+
+        <!-- Multiple Images -->
+        <div class="form-group">
+            <label for="images">Upload Images</label>
+            <input type="file" id="images" name="images" accept="image/*" multiple>
+        </div>
+
+        <button type="submit" class="btn-primary">Post</button>
+    </form>
+</div>
+{% endblock %}
