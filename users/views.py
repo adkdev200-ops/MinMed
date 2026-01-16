@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from users.models import Post, PostImage
+from django.http import JsonResponse
 
 def base_page(request):
     return render(request, 'base.html')
@@ -72,10 +73,17 @@ def upload_page(request):
 
 @login_required
 def like_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.user in post.likes.all():
-        post.likes.remove(request.user)
-    else:
-        post.likes.add(request.user)
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
 
-    return redirect('home')
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
+
+        return JsonResponse({
+            "liked": liked,
+            "total_likes": post.likes.count()
+        })
