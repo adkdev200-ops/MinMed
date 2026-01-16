@@ -27,7 +27,8 @@ urlpatterns = [
     path('login', users.views.login_page,  name='login'),
     path('signup', users.views.signup_page, name = 'signup'),
     path('logout', users.views.logout_view, name ='logout'),
-    path('upload', users.views.upload_page, name ='upload')
+    path('upload', users.views.upload_page, name ='upload'),
+    path('like/<post_id>', users.views.like_post, name ='like_post')
 
 ]
 if settings.DEBUG:

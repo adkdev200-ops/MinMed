@@ -5,7 +5,10 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(User, related_name ='likes', blank=True)
 
+    def total_likes(self):
+        return self.likes.count()
 
 class PostImage(models.Model):
     post = models.ForeignKey(Post,related_name='images', on_delete=models.CASCADE)

@@ -1,4 +1,4 @@
-]{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Home | MinMedia{% endblock %}
@@ -50,7 +50,11 @@
 
         <!-- ACTIONS -->
         <div class="post-actions">
-            <button class="like-btn">❤️ Like</button>
+            <form method = 'post' action="{% url "like_post" post.id %}">
+           {% csrf_token %}
+
+            <button class="like-btn" type="submit">❤️ Like {{post.total_likes}}</button>
+             </form> 
             <button class="comment-btn">💬 Comment</button>
         </div>
 
