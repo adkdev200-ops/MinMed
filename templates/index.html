@@ -99,111 +99,42 @@
     {% endfor %}
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+$(document).ready(function () {
+
+    $('.like-btn').click(function () {
+
+        let btn = $(this);
+        let postId = btn.data('post-id');
+        let csrfToken = $('#csrf-token').val();
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'like-post' %}",
+            data: {
+                post_id: postId,
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function (response) {
+
+                $('#likes-count-' + postId).text(response.total_likes);
+
+                if (response.liked) {
+                    btn.find('.like-icon').text('❤️');
+                    btn.find('.like-text').text('Unlike');
+                } else {
+                    btn.find('.like-icon').text('🤍');
+                    btn.find('.like-text').text('Like');
                 }
             }
-        }
-        return cookieValue;
-    }
-
-    const csrfToken = document.getElementById("csrf-token").value || getCookie('csrftoken');
-
-    document.querySelectorAll(".like-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            const postId = this.dataset.postId;
-            const buttonElement = this;
-            const likeIcon = buttonElement.querySelector('.like-icon');
-            const likeText = buttonElement.querySelector('.like-text');
-            const countElement = document.getElementById("likes-count-" + postId);
-
-            // Disable button during request to prevent double-clicks
-            buttonElement.disabled = true;
-            buttonElement.style.opacity = '0.6';
-            buttonElement.style.cursor = 'wait';
-
-            // Construct the URL with post_id
-            const url = `/like/${postId}`;
-
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": csrfToken,
-                    "Content-Type": "application/json",
-                    "X-Requested-With": "XMLHttpRequest"
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Update like count
-                if (countElement) {
-                    countElement.textContent = data.total_likes;
-                    
-                    // Update count label (singular/plural)
-                    const labelElement = countElement.nextElementSibling;
-                    if (labelElement && labelElement.classList.contains('count-label')) {
-                        labelElement.textContent = data.total_likes === 1 ? 'like' : 'likes';
-                    }
-                }
-
-                // Update button icon and text
-                if (likeIcon) {
-                    likeIcon.textContent = data.liked ? '❤️' : '🤍';
-                }
-                if (likeText) {
-                    likeText.textContent = data.liked ? 'Unlike' : 'Like';
-                }
-                
-                // Update button state
-                buttonElement.dataset.liked = data.liked ? 'true' : 'false';
-                
-                // Add animation class
-                buttonElement.classList.add('liked-animation');
-                setTimeout(() => {
-                    buttonElement.classList.remove('liked-animation');
-                }, 300);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Show a subtle error message
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'error-message';
-                errorMsg.textContent = 'Failed to update like. Please try again.';
-                errorMsg.style.cssText = 'position: fixed; top: 80px; right: 20px; background: #ef4444; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-                document.body.appendChild(errorMsg);
-                setTimeout(() => {
-                    errorMsg.style.opacity = '0';
-                    errorMsg.style.transition = 'opacity 0.3s';
-                    setTimeout(() => errorMsg.remove(), 300);
-                }, 3000);
-            })
-            .finally(() => {
-                // Re-enable button
-                buttonElement.disabled = false;
-                buttonElement.style.opacity = '1';
-                buttonElement.style.cursor = 'pointer';
-            });
         });
+
     });
 
-    // Bootstrap carousel is handled automatically by Bootstrap JS
-    // No custom JavaScript needed
 });
 </script>
+
+
 {% endblock %}

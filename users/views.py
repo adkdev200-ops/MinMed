@@ -72,8 +72,9 @@ def upload_page(request):
     return render(request, 'upload.html')
 
 @login_required
-def like_post(request, post_id):
+def like_post(request):
     if request.method == "POST":
+        post_id = request.POST.get('post_id')  # <-- use same key as AJAX
         post = get_object_or_404(Post, id=post_id)
 
         if request.user in post.likes.all():
@@ -87,3 +88,4 @@ def like_post(request, post_id):
             "liked": liked,
             "total_likes": post.likes.count()
         })
+    return JsonResponse({"error": "Invalid request"}, status=400)
