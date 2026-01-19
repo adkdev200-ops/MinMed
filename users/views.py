@@ -6,8 +6,10 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from users.models import Post, PostImage, Comments
+from users.models import Post, PostImage, Comments, ExtraUserInfo
 from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+
 
 def base_page(request):
     return render(request, 'base.html')
@@ -124,10 +126,15 @@ def update_info(request):
 
     if request.method == 'POST':
         user = request.user
-        extra_info = user.extrauserinfo
-        user.username = request.POST.get('uname')
-        user.first_name= request.POST.get('fname')
-        user.last_name = request.POST.get('lname')
+        try:
+            extra_info = user.extrauserinfo
+        except ObjectDoesNotExist:
+            extra_info = None
+        if not extra_info:
+            extra_info = ExtraUserInfo.objects.create(user = user)
+        user.username = request.POST.get('username')
+        user.first_name= request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
         user.email = request.POST.get('email')
         extra_info.bio = request.POST.get('bio')
         if 'profile_pic' in request.FILES:

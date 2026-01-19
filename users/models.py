@@ -22,5 +22,5 @@ class Comments(models.Model):
 
 class ExtraUserInfo(models.Model):
     user = models.OneToOneField(User,related_name='extrauserinfo', on_delete=models.CASCADE)
-    bio = models.TextField(max_length=255)
-    profile_pic = models.ImageField(upload_to='avatars/')
+    bio = models.TextField(max_length=255, default=None , null=True)
+    profile_pic = models.ImageField(upload_to='avatars/', default=None, null=True)
