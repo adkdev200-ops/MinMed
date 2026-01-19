@@ -20,3 +20,7 @@ class Comments(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
 
+class ExtraUserInfo(models.Model):
+    user = models.OneToOneField(User,related_name='extrauserinfo', on_delete=models.CASCADE)
+    bio = models.TextField(max_length=255)
+    profile_pic = models.ImageField(upload_to='avatars/')

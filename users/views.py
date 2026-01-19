@@ -118,3 +118,21 @@ def add_comment(request):
             'user': comment.user.get_full_name() or comment.user.username,
             'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M')
         })
+
+
+def update_info(request):
+
+    if request.method == 'POST':
+        user = request.user
+        extra_info = user.extrauserinfo
+        user.username = request.POST.get('uname')
+        user.first_name= request.POST.get('fname')
+        user.last_name = request.POST.get('lname')
+        user.email = request.POST.get('email')
+        extra_info.bio = request.POST.get('bio')
+        if 'profile_pic' in request.FILES:
+            extra_info.profile_pic = request.FILES.get('profile_pic')
+        user.save()
+        extra_info.save()
+        
+    return render(request, 'updateinfo.html')

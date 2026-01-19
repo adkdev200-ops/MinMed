@@ -29,8 +29,9 @@ urlpatterns = [
     path('logout', users.views.logout_view, name ='logout'),
     path('upload', users.views.upload_page, name ='upload'),
     path('like-post/', users.views.like_post, name ='like-post'),
-    path('<username>', users.views.profile, name = 'profile'),
-    path('add-comment/', users.views.add_comment, name ='add-comment')
+    path('profile/<username>', users.views.profile, name = 'profile'),
+    path('add-comment/', users.views.add_comment, name ='add-comment'),
+    path('update-info', users.views.update_info, name = 'update-info')
 
 ]
 if settings.DEBUG:
