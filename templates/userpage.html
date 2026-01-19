@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - MinMedia{% endblock %}
+
+{% block content %}
+<!-- ===== PROFILE HEADER ===== -->
+<div class="profile-header">
+    <div class="profile-cover"></div>
+
+    <div class="profile-info">
+        <img src="{% static 'images/user-avatar.png' %}" class="profile-avatar">
+        <div>
+            <h2>{{request.user.first_name}} {{request.user.last_name}}</h2>
+            <p>@{{request.user.username}}</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PROFILE NAV ===== -->
+<div class="profile-nav">
+    <a href="#" class="active">Posts</a>
+    <a href="#">Photos</a>
+    <a href="#">About</a>
+</div>
+<!-- CSRF token (REQUIRED) -->
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+<div class="feed-container">
+    {% for post in posts %}
+        <article class="post-card">
+            <!-- Post Header -->
+            <div class="post-header">
+                <div class="avatar-container">
+                    <div class="avatar-placeholder">{{ post.user.username|first|upper }}</div>
+                </div>
+                <div class="post-user-info">
+                    <strong class="post-username">{{ post.user.username }}</strong>
+                    <span class="post-time">{{ post.created_at|timesince }} ago</span>
+                </div>
+            </div>
+
+            <!-- Post Caption -->
+            {% if post.caption %}
+                <div class="post-caption">
+                    <strong class="caption-username">{{ post.user.username }}</strong>
+                    <span class="caption-text">{{ post.caption }}</span>
+                </div>
+            {% endif %}
+
+            <!-- Post Images -->
+            {% if post.images.all %}
+                <div id="carousel-{{ post.id }}" class="carousel slide post-carousel" data-ride="carousel" data-interval="false">
+                    <div class="carousel-inner">
+                        {% for image in post.images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img class="d-block w-100 post-image" src="{{ image.image.url }}" alt="Post image {{ forloop.counter }}" loading="lazy">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Navigation Controls (only show if multiple images) -->
+                    {% if post.images.all|length > 1 %}
+                        <a class="carousel-control-prev" href="#carousel-{{ post.id }}" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carousel-{{ post.id }}" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                        
+                        <!-- Carousel Indicators -->
+                        <ol class="carousel-indicators">
+                            {% for image in post.images.all %}
+                                <li data-target="#carousel-{{ post.id }}" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+                            {% endfor %}
+                        </ol>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Post Actions -->
+            <div class="post-actions">
+                <button class="like-btn action-btn" 
+                        data-post-id="{{ post.id }}"
+                        data-liked="{% if user in post.likes.all %}true{% else %}false{% endif %}">
+                    <span class="like-icon">
+                        {% if user in post.likes.all %}
+                            ❤️
+                        {% else %}
+                            🤍
+                        {% endif %}
+                    </span>
+                    <span class="like-text">
+                        {% if user in post.likes.all %}
+                            Unlike
+                        {% else %}
+                            Like
+                        {% endif %}
+                    </span>
+                </button>
+                <div class="likes-count">
+                    <span id="likes-count-{{ post.id }}" class="count-number">{{ post.likes.count }}</span>
+                    <span class="count-label">
+                        {% if post.likes.count == 1 %}like{% else %}likes{% endif %}
+                    </span>
+                </div>
+            </div>
+        </article>
+    {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No posts yet</h3>
+            <p>Be the first to share something amazing!</p>
+            <a href="{% url 'upload' %}" class="create-post-btn">Create Post</a>
+        </div>
+    {% endfor %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    $('.like-btn').click(function () {
+
+        let btn = $(this);
+        let postId = btn.data('post-id');
+        let csrfToken = $('#csrf-token').val();
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'like-post' %}",
+            data: {
+                post_id: postId,
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function (response) {
+
+                $('#likes-count-' + postId).text(response.total_likes);
+
+                if (response.liked) {
+                    btn.find('.like-icon').text('❤️');
+                    btn.find('.like-text').text('Unlike');
+                } else {
+                    btn.find('.like-icon').text('🤍');
+                    btn.find('.like-text').text('Like');
+                }
+            }
+        });
+
+    });
+
+});
+</script>
+
+
+{% endblock %}

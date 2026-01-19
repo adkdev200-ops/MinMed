@@ -88,6 +88,49 @@
                     </span>
                 </div>
             </div>
+            
+    <!-- COMMENT BUTTON -->
+    <button class="comment-toggle-btn" data-post-id="{{ post.id }}">
+        💬 Comment
+    </button>
+    <!-- ===== COMMENTS SECTION ===== -->
+<div class="comments-section" id="comments-{{ post.id }}">
+
+    <!-- EXISTING COMMENTS -->
+    {% for comment in post.comments.all %}
+        <div class="comment">
+            <div class="comment-avatar">
+                <img src="{% static 'images/user-avatar.png' %}">
+            </div>
+            <div class="comment-body">
+                <div class="comment-header">
+                    <strong>
+                        {{ comment.user.first_name }} {{ comment.user.last_name }}
+                    </strong>
+                    <span class="comment-time">
+                        {{ comment.created_at|timesince }} ago
+                    </span>
+                </div>
+                <p class="comment-text">
+                    {{ comment.content }}
+                </p>
+            </div>
+        </div>
+    {% empty %}
+        <p class="no-comments">No comments yet</p>
+    {% endfor %}
+
+     <form class="comment-form" data-post-id="{{ post.id }}">
+        <input type="text"
+               id="comment-content-{{ post.id }}"
+               placeholder="Write a comment..."
+               required>
+        <button type="submit">Post</button>
+    </form>
+</div>
+
+</div>
+
         </article>
     {% empty %}
         <div class="empty-state">
@@ -132,8 +175,48 @@ $(document).ready(function () {
         });
 
     });
+ $('.comment-form').submit(function (e) {
+    e.preventDefault();
 
+    let form = $(this);
+    let postId = form.data('post-id');
+    let content = $('#comment-content-' + postId).val();
+    let csrfToken = $('#csrf-token').val();
+
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'add-comment' %}",   // 🔴 CREATE THIS URL
+        data: {
+            post_id: postId,
+            content: content,
+            csrfmiddlewaretoken: csrfToken
+        },
+        success: function (response) {
+
+            // Append comment instantly (NO REFRESH)
+        let commentHtml = `
+<div class="comment">
+    <div class="comment-avatar">
+        <img src="{% static 'images/user-avatar.png' %}">
+    </div>
+    <div class="comment-body">
+        <div class="comment-header">
+            <strong>${response.user}</strong>
+            <span class="comment-time">just now</span>
+        </div>
+        <p class="comment-text">${response.content}</p>
+    </div>
+</div>
+`;
+
+            form.before(commentHtml);
+            $('#comment-content-' + postId).val('');
+        }
+    });
 });
+
+    });
+
 </script>
 
 

@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from users.models import Post, PostImage
+from users.models import Post, PostImage, Comments
 from django.http import JsonResponse
 
 def base_page(request):
@@ -89,3 +89,32 @@ def like_post(request):
             "total_likes": post.likes.count()
         })
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+@login_required
+def profile(request, username):
+    posts = Post.objects.filter(user=request.user)
+    return render(request, 'userpage.html', {"posts" : posts})
+
+@login_required
+def add_comment(request):
+    print('hello world')
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        post_id = request.POST.get('post_id')
+        print(post_id)
+        if not content:
+            return JsonResponse({'error': 'Empty comment'}, status=400)
+
+        post = get_object_or_404(Post, id=post_id)
+
+        comment = Comments.objects.create(
+            post=post,
+            user=request.user,
+            content=content
+        )
+
+        return JsonResponse({
+            'content': comment.content,
+            'user': comment.user.get_full_name() or comment.user.username,
+            'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M')
+        })
