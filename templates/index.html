@@ -4,7 +4,6 @@
 {% block title %}Home - MinMedia{% endblock %}
 
 {% block content %}
-<!-- CSRF token (REQUIRED) -->
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
 <div class="feed-container">
@@ -40,7 +39,6 @@
                         {% endfor %}
                     </div>
                     
-                    <!-- Navigation Controls (only show if multiple images) -->
                     {% if post.images.all|length > 1 %}
                         <a class="carousel-control-prev" href="#carousel-{{ post.id }}" role="button" data-slide="prev">
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -50,8 +48,6 @@
                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
                             <span class="sr-only">Next</span>
                         </a>
-                        
-                        <!-- Carousel Indicators -->
                         <ol class="carousel-indicators">
                             {% for image in post.images.all %}
                                 <li data-target="#carousel-{{ post.id }}" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
@@ -67,18 +63,10 @@
                         data-post-id="{{ post.id }}"
                         data-liked="{% if user in post.likes.all %}true{% else %}false{% endif %}">
                     <span class="like-icon">
-                        {% if user in post.likes.all %}
-                            ❤️
-                        {% else %}
-                            🤍
-                        {% endif %}
+                        {% if user in post.likes.all %}❤️{% else %}🤍{% endif %}
                     </span>
                     <span class="like-text">
-                        {% if user in post.likes.all %}
-                            Unlike
-                        {% else %}
-                            Like
-                        {% endif %}
+                        {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
                     </span>
                 </button>
                 <div class="likes-count">
@@ -88,48 +76,33 @@
                     </span>
                 </div>
             </div>
-            
-    <!-- COMMENT BUTTON -->
-    <button class="comment-toggle-btn" data-post-id="{{ post.id }}">
-        💬 Comment
-    </button>
-    <!-- ===== COMMENTS SECTION ===== -->
-<div class="comments-section" id="comments-{{ post.id }}">
 
-    <!-- EXISTING COMMENTS -->
-    {% for comment in post.comments.all %}
-        <div class="comment">
-            <div class="comment-avatar">
-                <img src="{% static 'images/user-avatar.png' %}">
+            <!-- Comment Button -->
+            <button class="comment-toggle-btn" data-post-id="{{ post.id }}">💬 Comment</button>
+
+            <!-- Comments Section -->
+            <div class="comments-section" id="comments-{{ post.id }}">
+                {% for comment in post.comments.all %}
+                    <div class="comment">
+                        <div class="comment-avatar">
+                            <img src="{% static 'images/user-avatar.png' %}" alt="avatar">
+                        </div>
+                        <div class="comment-body">
+                            <div class="comment-header">
+                                <strong>{{ comment.user.first_name }} {{ comment.user.last_name }}</strong>
+                                <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="comment-text">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="no-comments">No comments yet</p>
+                {% endfor %}
+                <form class="comment-form" data-post-id="{{ post.id }}">
+                    <input type="text" id="comment-content-{{ post.id }}" placeholder="Write a comment..." required>
+                    <button type="submit">Post</button>
+                </form>
             </div>
-            <div class="comment-body">
-                <div class="comment-header">
-                    <strong>
-                        {{ comment.user.first_name }} {{ comment.user.last_name }}
-                    </strong>
-                    <span class="comment-time">
-                        {{ comment.created_at|timesince }} ago
-                    </span>
-                </div>
-                <p class="comment-text">
-                    {{ comment.content }}
-                </p>
-            </div>
-        </div>
-    {% empty %}
-        <p class="no-comments">No comments yet</p>
-    {% endfor %}
-
-     <form class="comment-form" data-post-id="{{ post.id }}">
-        <input type="text"
-               id="comment-content-{{ post.id }}"
-               placeholder="Write a comment..."
-               required>
-        <button type="submit">Post</button>
-    </form>
-</div>
-
-</div>
 
         </article>
     {% empty %}
@@ -142,13 +115,13 @@
     {% endfor %}
 </div>
 
+<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<!-- Custom JS (like and comment AJAX remain unchanged) -->
 <script>
 $(document).ready(function () {
-
     $('.like-btn').click(function () {
-
         let btn = $(this);
         let postId = btn.data('post-id');
         let csrfToken = $('#csrf-token').val();
@@ -156,49 +129,33 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             url: "{% url 'like-post' %}",
-            data: {
-                post_id: postId,
-                csrfmiddlewaretoken: csrfToken
-            },
+            data: { post_id: postId, csrfmiddlewaretoken: csrfToken },
             success: function (response) {
-
                 $('#likes-count-' + postId).text(response.total_likes);
-
                 if (response.liked) {
-                    btn.find('.like-icon').text('❤️');
-                    btn.find('.like-text').text('Unlike');
+                    btn.find('.like-icon').text('❤️'); btn.find('.like-text').text('Unlike');
                 } else {
-                    btn.find('.like-icon').text('🤍');
-                    btn.find('.like-text').text('Like');
+                    btn.find('.like-icon').text('🤍'); btn.find('.like-text').text('Like');
                 }
             }
         });
-
     });
- $('.comment-form').submit(function (e) {
-    e.preventDefault();
 
-    let form = $(this);
-    let postId = form.data('post-id');
-    let content = $('#comment-content-' + postId).val();
-    let csrfToken = $('#csrf-token').val();
+    $('.comment-form').submit(function (e) {
+        e.preventDefault();
+        let form = $(this);
+        let postId = form.data('post-id');
+        let content = $('#comment-content-' + postId).val();
+        let csrfToken = $('#csrf-token').val();
 
-    $.ajax({
-        type: 'POST',
-        url: "{% url 'add-comment' %}",   // 🔴 CREATE THIS URL
-        data: {
-            post_id: postId,
-            content: content,
-            csrfmiddlewaretoken: csrfToken
-        },
-        success: function (response) {
-
-            // Append comment instantly (NO REFRESH)
-        let commentHtml = `
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'add-comment' %}",
+            data: { post_id: postId, content: content, csrfmiddlewaretoken: csrfToken },
+            success: function (response) {
+                let commentHtml = `
 <div class="comment">
-    <div class="comment-avatar">
-        <img src="{% static 'images/user-avatar.png' %}">
-    </div>
+    <div class="comment-avatar"><img src="{% static 'images/user-avatar.png' %}"></div>
     <div class="comment-body">
         <div class="comment-header">
             <strong>${response.user}</strong>
@@ -206,18 +163,18 @@ $(document).ready(function () {
         </div>
         <p class="comment-text">${response.content}</p>
     </div>
-</div>
-`;
-
-            form.before(commentHtml);
-            $('#comment-content-' + postId).val('');
-        }
+</div>`;
+                form.before(commentHtml);
+                $('#comment-content-' + postId).val('');
+            }
+        });
     });
 });
-
-    });
-
 </script>
+
+<!-- Sexy CSS -->
+
+
 
 
 {% endblock %}

@@ -1,46 +1,75 @@
 {% extends "base.html" %}
 
+{% block title %}Edit Profile | MinMedia{% endblock %}
+
 {% block content %}
+<div class="profile-form-page">
+    <div class="profile-form-card">
+        <h2 class="form-title">Edit your profile</h2>
+        <p class="form-subtitle">Update how you appear across MinMedia.</p>
 
-<h2>Update Your Profile</h2>
+        <form method="POST" action="{% url 'update-info' %}" enctype="multipart/form-data">
+            {% csrf_token %}
 
-<form method="POST" action="{% url 'update-info' %}" enctype="multipart/form-data">
-    {% csrf_token %}
+            <div class="form-grid">
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="uname">Username</label>
+                    <input type="text" id="uname" name="username" value="{{ request.user.username }}">
+                </div>
 
-    <!-- Username -->
-    <label for="uname">Username:</label>
-    <input type="text" id="uname" name="username" value="{{ request.user.username }}"><br><br>
+                <!-- First Name -->
+                <div class="form-group">
+                    <label for="fname">First Name</label>
+                    <input type="text" id="fname" name="first_name" value="{{ request.user.first_name }}">
+                </div>
 
-    <!-- First Name -->
-    <label for="fname">First Name:</label>
-    <input type="text" id="fname" name="first_name" value="{{ request.user.first_name }}"><br><br>
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label for="lname">Last Name</label>
+                    <input type="text" id="lname" name="last_name" value="{{ request.user.last_name }}">
+                </div>
 
-    <!-- Last Name -->
-    <label for="lname">Last Name:</label>
-    <input type="text" id="lname" name="last_name" value="{{ request.user.last_name }}"><br><br>
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ request.user.email }}">
+                </div>
 
-    <!-- Email -->
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" value="{{ request.user.email }}"><br><br>
+                <!-- Bio -->
+                <div class="form-group form-group-full">
+                    <label for="bio">Bio</label>
+                    <input type="text" id="bio" name="bio" value="{{ request.user.extrauserinfo.bio }}">
+                </div>
 
-    <!-- Bio -->
-    <label for="bio">Bio:</label>
-    <input type="text" id="bio" name="bio" value="{{ request.user.extrauserinfo.bio }}"><br><br>
+                <!-- Profile Picture -->
+                <div class="form-group form-group-full">
+                    <label for="profile_pic">Profile Picture</label>
+                    <div class="avatar-upload-row">
+                        {% if request.user.extrauserinfo.profile_pic %}
+                            <img src="{{ request.user.extrauserinfo.profile_pic.url }}" class="profile-avatar-preview" id="imgPreview">
+                        {% endif %}
+                        <input type="file" id="profile_pic" name="profile_pic" accept="image/*">
+                    </div>
+                </div>
+            </div>
 
-    <!-- Profile Picture -->
-    <label>Profile Picture:</label><br>
-    {% if request.user.extrauserinfo.profile_pic  %}
-    <img src="{{ request.user.extrauserinfo.profile_pic.url }}" width="100" id = "imgPreview"><br>{% endif %}
-    <input type="file" id="profile_pic" name="profile_pic" accept="image/*" id = "imgInput"><br><br>
-
-    <button type="submit">Update Profile</button>
-</form>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
-    $("#imgInput").change(function () {
-    $("#imgPreview").attr("src", URL.createObjectURL(this.files[0]));
-});
+    $("#profile_pic").change(function () {
+        const preview = $("#imgPreview");
+        if (this.files && this.files[0]) {
+            if (preview.length) {
+                preview.attr("src", URL.createObjectURL(this.files[0]));
+            }
+        }
+    });
 </script>
-
 
 {% endblock %}
