@@ -23,7 +23,7 @@
             <!-- Post Caption -->
             {% if post.caption %}
                 <div class="post-caption">
-                    <strong class="caption-username">{{ post.user.username }}</strong>
+                    <a href = "{{{% url "profile" post.user.username %}}}"><strong class="caption-username">{{ post.user.username }}</strong></a>
                     <span class="caption-text">{{ post.caption }}</span>
                 </div>
             {% endif %}
